@@ -1,75 +1,131 @@
-# MolBhav MVP — early-access site + private admin panel
+# MolBhav
 
-Two links, one small app:
+**Real Pune mandi prices, and what they'll do next.**
 
-| Link | Who | What it does |
-|---|---|---|
-| `https://your-domain/` | Anyone you share it with | One-page MolBhav site. People sign up / log in and see their own details. |
-| `https://your-domain/admin-XXXXXXXX/` | **Only you** | Admin panel: count of people, logins, search, export CSV, remove people. |
+MolBhav helps restaurants and cloud kitchens in Pune buy tomatoes, onions and potatoes at the right time.
+It shows today's wholesale (mandi) prices from the Government of India's AGMARKNET data, a 3-month price
+chart, a 14-day estimate, and a simple signal for each vegetable: **Buy now**, **Wait** or **Steady**.
 
-The admin link is a long random path that only you know, and it is still locked behind your
-email + password (+ a 6-digit authenticator code if you turn it on). Guessing `/admin` just returns "Not found".
+**Live site:** https://molbhav-gamma.vercel.app
+
+![MolBhav home page: night photo of Pune's Mahatma Phule Mandai with the MolBhav title](docs/screenshots/hero.jpg)
+
+## Screenshots
+
+### Today's mandi prices
+Real APMC Pune prices with a live, growing chart (TradingView Lightweight Charts) and a 14-day estimate.
+The whole page changes colour with the vegetable you pick: red for tomato, violet and blue for onion,
+gold and brown for potato.
+
+![Tomato prices: red theme, ₹/kg price card and 3-month chart](docs/screenshots/prices-tomato.jpg)
+
+| Onion | Potato |
+|---|---|
+| ![Onion prices in the violet and blue theme](docs/screenshots/prices-onion.jpg) | ![Potato prices in the gold and brown theme](docs/screenshots/prices-potato.jpg) |
+
+### Scroll story
+The first screen is a pinned, film-like scroll story. Full-screen market photos cross-fade and zoom as you
+scroll, and each scene shows today's real price.
+
+![Onion scene of the scroll story with today's price](docs/screenshots/story-onion.jpg)
+
+### Every Pune mandi, side by side
+
+![Table of Pune mandi rates: modal, lowest and highest price per mandi](docs/screenshots/mandi-table.jpg)
+
+### Made for busy kitchens
+
+![Feature cards: 14-day forecast, buy/wait/steady signal and a Monday WhatsApp brief](docs/screenshots/features.jpg)
+
+### On a phone
+
+<p>
+  <img src="docs/screenshots/mobile-hero.jpg" alt="MolBhav home page on a phone" width="260">
+  &nbsp;
+  <img src="docs/screenshots/mobile-prices.jpg" alt="Onion prices on a phone" width="260">
+</p>
+
+## Features
+
+- **Real prices:** daily AGMARKNET arrivals and prices from data.gov.in for Pune mandis (APMC Pune
+  Gultekdi, Khadiki, Pimpri, Moshi, Manjri and more), converted from ₹/quintal to ₹/kg.
+- **Charts and estimates:** 3 months of history, a 14-day statistical estimate with a likely range, and a
+  plain buy / wait / steady signal. These are estimates and are labelled as such.
+- **Live updates:** prices refresh in the background while the page is open.
+- **Sign-up with Google or email:** after signing in, people add their business name and type
+  (restaurant, cloud kitchen and so on) and get a personal dashboard.
+- **Private admin panel** at a secret path: sign-up counts, a live login counter, search, CSV export,
+  removing people and an audit log.
+- **Look and motion:** dark theme, per-vegetable colour themes, a scroll story, word-by-word headings
+  and hover effects, built with [Motion](https://motion.dev).
+
+## How it's built
+
+| Part | What it uses |
+|---|---|
+| Server | Node.js, Express 4 (`server.js`), one serverless function on Vercel (`api/index.js`) |
+| Database | libSQL: a local file on your laptop, [Turso](https://turso.tech) in production (`db.js`) |
+| Prices | AGMARKNET via the data.gov.in API (`prices.js`), stored per day, vegetable and mandi |
+| Front end | Plain HTML, CSS and JavaScript (`public/`), no framework |
+| Charts | [TradingView Lightweight Charts](https://www.tradingview.com/lightweight-charts/) v5 |
+| Animation | [Motion](https://motion.dev) 12 (`public/motion-fx.js`) |
+| Hosting | Vercel, Mumbai region (`bom1`), because data.gov.in only accepts connections from India |
 
 ## Run it on your laptop
 
+Needs Node.js 22.
+
 ```bash
 npm install
-npm run setup-admin        # asks for your admin email + password, prints secrets
+npm run setup-admin        # asks for your admin email + password and prints the settings to keep
 cp .env.example .env       # paste the printed lines into .env
 npm start                  # open http://localhost:3000
 ```
 
-Your admin panel is at `http://localhost:3000` + the `ADMIN_PATH` value from `.env`.
+The admin panel is at `http://localhost:3000` + the `ADMIN_PATH` value from your `.env`.
+Prices are fetched from data.gov.in the first time someone opens the site, so the first load can take a few seconds.
 
-## Put it online (Render — free to start)
+### Settings (`.env`)
 
-1. Push this folder to a **private** GitHub repo (`.env` and the database are already git-ignored).
-2. On render.com: **New → Web Service**, pick the repo.
-   - Build command: `npm install`  · Start command: `npm start`
-3. **Environment** tab — add these (values from `npm run setup-admin`):
-   `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`, `ADMIN_PATH`, `ADMIN_TOTP_SECRET` (optional),
-   `NODE_ENV=production`, `DB_PATH=/var/data/molbhav.db`
-4. **Disks** tab — add a disk mounted at `/var/data` so sign-ups survive restarts
-   (Render's free tier has no disk; the cheapest paid instance does. Railway or Fly.io volumes work the same way).
-5. Share `https://<your-app>.onrender.com/` with people. Keep `https://<your-app>.onrender.com/<ADMIN_PATH>/` to yourself.
+| Variable | Needed? | What it is |
+|---|---|---|
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`, `ADMIN_PATH` | Yes | Printed by `npm run setup-admin` |
+| `ADMIN_TOTP_SECRET` | Optional | 2-step codes for the admin login (any authenticator app) |
+| `GOOGLE_CLIENT_ID` | Optional | Shows the "Continue with Google" button (public value, no client secret) |
+| `DB_PATH` | Optional | Local database file, default `./data/molbhav.db` |
+| `DATABASE_URL`, `DATABASE_AUTH_TOKEN` | Production | Turso database address and token |
+| `DATA_GOV_API_KEY` | Optional | Your own data.gov.in key; otherwise the public, heavily throttled sample key is used |
+| `NODE_ENV` | Production | Set to `production` for HTTPS-only cookies |
 
-## What keeps it secure
+`.env` is git-ignored. Never commit it.
 
-- **No secrets in the browser.** The site's HTML/JS contains no keys, hashes or the admin path.
-  Everything sensitive lives in environment variables on the server.
-- **Passwords** are hashed with bcrypt (cost 12). Your admin password is never stored, only its hash.
-- **Sessions** are random 256-bit tokens in `HttpOnly`, `SameSite=Strict`, `Secure` (in production) cookies;
-  only a SHA-256 of each token is stored. User and admin sessions are completely separate:
-  the admin cookie is only ever sent to the secret admin path, and a user cookie can never reach admin data.
-- **Optional 2-step login** for admin with any authenticator app (Google Authenticator, Authy).
-- **Removing a person** deletes their account and signs them out instantly on every device.
-- **Brute-force protection:** 5 admin sign-in attempts / 15 min per IP, 20 for users.
-- **Forgery protection:** every change needs a same-origin JSON request with a custom header that other websites cannot send.
-- **Strict security headers** (Content-Security-Policy, no framing, HSTS in production), no stack traces leaked,
-  parameterised SQL everywhere, and every name/email is rendered as plain text (no script injection).
-- **Audit log** in the admin panel shows admin sign-ins, failed attempts and removals.
+## Deploy to Vercel
 
-## Change things
+1. Create a free database on Turso and note its URL (`libsql://…`) and an auth token.
+2. Link this folder to a Vercel project: `npx vercel@latest link`.
+3. Add the settings above as **Production** environment variables. `scripts/push-env-to-vercel.sh` copies
+   the admin and Google settings from your `.env`; add `DATABASE_URL` and `DATABASE_AUTH_TOKEN` in the
+   Vercel dashboard.
+4. Deploy: `npx vercel@latest deploy --prod --yes`.
 
-- Price / copy on the public page: `public/index.html`
-- Sign-up fields: `public/index.html` + `/api/signup` in `server.js`
-- Admin table columns: `admin/admin.html` + `admin/admin.js`
+Use your own `DATABASE_URL`, not Vercel's Turso integration. The integration gives each deployment a new,
+empty database branch, so sign-ups would disappear on every deploy.
 
-Rotating your admin password: run `npm run setup-admin` again and update the variables on your host.
+For Google sign-in, add your site's address (for example `https://your-app.vercel.app`) under
+**Authorised JavaScript origins** of your OAuth client in Google Cloud.
 
-## Optional: "Continue with Google" button
+## Security
 
-The button only appears once you add a Google Client ID. It's free.
+- **No secrets in the browser.** The site's HTML and JavaScript contain no keys, hashes or the admin path.
+- **Passwords** are hashed with bcrypt (cost 12). Sessions are random 256-bit tokens in `HttpOnly`,
+  `SameSite=Strict`, `Secure` cookies, and only a SHA-256 of each token is stored.
+- **User and admin sessions are separate.** The admin cookie is only sent to the secret admin path.
+- **Brute-force protection:** 5 admin sign-in attempts per 15 minutes per IP, 20 for users.
+- **Forgery protection:** every change needs a same-origin JSON request with a custom header.
+- **Strict headers:** Content-Security-Policy (`'self'` only, plus Google sign-in when enabled), no framing,
+  HSTS in production. All SQL is parameterised and user text is rendered as plain text.
 
-1. Go to https://console.cloud.google.com → create a project (e.g. "MolBhav").
-2. **APIs & Services → OAuth consent screen**: choose **External**, app name "MolBhav", your email as support + developer contact. Save. Under **Audience**, click **Publish app** so anyone can sign in (basic sign-in needs no Google review).
-3. **APIs & Services → Credentials → Create credentials → OAuth client ID** → type **Web application**.
-4. Under **Authorised JavaScript origins**, add your site address exactly, with no path or trailing slash, e.g.
-   `https://your-site.onrender.com` (and `http://localhost:3000` for local testing). Redirect URIs: leave empty.
-5. Copy the **Client ID** (ends in `.apps.googleusercontent.com`) into `.env` as `GOOGLE_CLIENT_ID=…`, then restart (`npm start`).
+## Data source
 
-The Client ID is public — Google shows it in the browser. There is **no client secret** to store: the server
-verifies every Google sign-in token itself (signature, audience, expiry, verified email).
-
-Note: a `trycloudflare.com` address changes every time you restart the tunnel, and each new address must be added
-to step 4 again. A fixed address (Render) avoids this.
+Prices: AGMARKNET daily arrivals and prices, Government of India, via [data.gov.in](https://data.gov.in).
+Prices are wholesale modal prices. Forecasts and signals are statistical estimates, not advice.
