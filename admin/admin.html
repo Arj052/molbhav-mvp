@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>MolBhav · Admin</title>
+<link rel="stylesheet" href="static/admin.css">
+</head>
+<body>
+<!-- sign-in -->
+<main id="loginView" class="login-wrap" hidden>
+  <form id="adminLogin" class="card login" novalidate>
+    <div class="brand"><span class="mark">MB</span>Admin</div>
+    <h1>Sign in</h1>
+    <label>Email<input name="email" type="email" autocomplete="username" required></label>
+    <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+    <label id="codeField" hidden>6-digit code from your authenticator app<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*"></label>
+    <p class="error" id="loginError" role="alert"></p>
+    <button class="btn primary" type="submit">Sign in</button>
+  </form>
+</main>
+
+<!-- dashboard -->
+<div id="appView" hidden>
+  <header class="bar">
+    <div class="brand"><span class="mark">MB</span>MolBhav <span class="tag">Admin</span></div>
+    <div class="bar-right">
+      <span class="live" id="liveBadge" data-state="off" role="status" aria-live="polite"><i aria-hidden="true"></i><span id="liveText">Connecting…</span></span>
+      <button class="btn ghost small" id="logoutBtn" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="stats" aria-label="Summary">
+      <div class="stat big"><p class="k">People signed up</p><p class="v" id="sTotal">–</p></div>
+      <div class="stat"><p class="k">New this week</p><p class="v" id="sWeek">–</p></div>
+      <div class="stat"><p class="k">Logins (24 h)</p><p class="v" id="sToday">–</p></div>
+      <div class="stat"><p class="k">Signed in now</p><p class="v" id="sActive">–</p></div>
+      <div class="stat"><p class="k">Total logins</p><p class="v" id="sLogins">–</p></div>
+    </section>
+
+    <section class="types" id="types" aria-label="By business type"></section>
+
+    <section class="card">
+      <div class="table-head">
+        <h2>People</h2>
+        <div class="tools">
+          <input id="search" type="search" placeholder="Search name, email, business, city" aria-label="Search people">
+          <button class="btn ghost small" id="exportBtn" type="button">Export CSV</button>
+          <button class="btn ghost small" id="refreshBtn" type="button">Refresh</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Business</th><th>Type</th><th>City</th><th>Joined</th><th>Last login</th><th>Logins</th><th><span class="sr">Actions</span></th></tr></thead>
+          <tbody id="rows"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Admin activity</h2>
+      <ul class="audit" id="audit"></ul>
+    </section>
+  </main>
+</div>
+
+<!-- confirm remove -->
+<div class="modal" id="confirm" hidden role="dialog" aria-modal="true" aria-labelledby="cTitle">
+  <div class="card">
+    <h2 id="cTitle">Remove this person?</h2>
+    <p class="muted">This deletes <b id="cName"></b> and signs them out immediately. It can’t be undone.</p>
+    <div class="actions">
+      <button class="btn ghost" id="cCancel" type="button">Cancel</button>
+      <button class="btn danger" id="cOk" type="button">Remove</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="static/admin.js" defer></script>
+</body>
+</html>

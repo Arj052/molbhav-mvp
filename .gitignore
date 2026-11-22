@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+data/
+*.db
+*.db-*
+.DS_Store
+ADMIN_LOGIN.txt
+LINK.txt
+.vercel
+.env*

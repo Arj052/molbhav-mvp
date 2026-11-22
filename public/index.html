@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MolBhav — Predict Smarter. Procure Better.</title>
+<meta name="description" content="Vegetable price forecasts and buy-or-wait advice for restaurants and cloud kitchens in Pune.">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="icon" href="/img/tomato.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/styles.css?v=8">
+</head>
+<body data-view="site" data-veg="tomato">
+<!-- animated red & black background: drifting glow orbs + film grain (decorative) -->
+<div class="bg-fx" aria-hidden="true"><span class="theme th-tomato"></span><span class="theme th-onion"></span><span class="theme th-potato"></span><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span><span class="money"></span><span class="coins"><i>₹</i><i>₹</i><i>₹</i><i>₹</i><i>₹</i><i>₹</i><i>₹</i></span><span class="grain"></span></div>
+<div class="spot" id="spot" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- ================= top navigation ================= -->
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <a class="brand" href="/" aria-label="MolBhav home"><span class="mark" aria-hidden="true">MB</span><span>Mol<span class="hl">Bhav</span></span></a>
+    <nav class="menu" aria-label="Main">
+      <a href="#prices" data-site>Prices</a>
+      <a href="#features" data-site>Features</a>
+      <a href="#how" data-site>How it works</a>
+      <a href="#pricing" data-site>Pricing</a>
+      <a href="#dash" data-app hidden>Dashboard</a>
+      <a href="#brief" data-app hidden>Weekly brief</a>
+      <a href="#planner" data-app hidden>Planner</a>
+    </nav>
+    <div class="nav-right">
+      <button class="btn text" data-open="login" type="button" data-site>Log in</button>
+      <button class="btn dark" data-open="signup" type="button" data-site>Get started</button>
+      <button class="user-chip" id="userChip" type="button" data-app hidden aria-haspopup="true" aria-expanded="false">
+        <span class="avatar" id="avatar" aria-hidden="true"></span><span id="chipName"></span>
+      </button>
+      <div class="user-menu" id="userMenu" hidden>
+        <p class="um-name" id="umName"></p>
+        <p class="um-mail" id="umMail"></p>
+        <button type="button" id="editProfileBtn">Business details</button>
+        <button type="button" id="logoutBtn">Log out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= public site (signed out) ================= -->
+<main id="site">
+  <!-- Scroll story: the screen stays pinned while scrolling swaps full-screen market photos
+       (cross-fade + slow zoom), like a film. Without Motion it falls back to stacked sections. -->
+  <section class="story" id="story" aria-label="MolBhav">
+    <div class="story-pin">
+      <article class="scene sc-mandai is-on" data-scene data-veg="tomato">
+        <div class="scene-bg" aria-hidden="true"></div>
+        <div class="scene-copy center">
+          <p class="eyebrow">Early access · Pune</p>
+          <h1 class="mega">MolBhav</h1>
+          <p class="lede">Real Pune mandi prices, and what they’ll do next.</p>
+          <div class="cta"><button class="btn light" data-open="signup" type="button">Get started free</button><a class="btn outline-light" href="#prices">See today’s prices</a></div>
+        </div>
+      </article>
+      <article class="scene sc-tomato" data-scene data-veg="tomato">
+        <div class="scene-bg" aria-hidden="true"></div>
+        <div class="scene-copy">
+          <p class="eyebrow">01 · APMC Pune</p>
+          <h2 class="scene-title">Tomato</h2>
+          <p class="scene-price"><b data-live="tomato">–</b> today · modal wholesale price</p>
+        </div>
+      </article>
+      <article class="scene sc-onion" data-scene data-veg="onion">
+        <div class="scene-bg" aria-hidden="true"></div>
+        <div class="scene-copy">
+          <p class="eyebrow">02 · APMC Pune</p>
+          <h2 class="scene-title">Onion</h2>
+          <p class="scene-price"><b data-live="onion">–</b> today · modal wholesale price</p>
+        </div>
+      </article>
+      <article class="scene sc-potato" data-scene data-veg="potato">
+        <div class="scene-bg" aria-hidden="true"></div>
+        <div class="scene-copy">
+          <p class="eyebrow">03 · APMC Pune</p>
+          <h2 class="scene-title">Potato</h2>
+          <p class="scene-price"><b data-live="potato">–</b> today · modal wholesale price</p>
+        </div>
+      </article>
+      <article class="scene sc-final" data-scene data-veg="tomato">
+        <div class="scene-bg" aria-hidden="true"></div>
+        <div class="scene-copy center">
+          <p class="statement">Every Pune mandi price. <em>Before it moves.</em></p>
+          <div class="cta"><button class="btn light" data-open="signup" type="button">Join the pilot</button></div>
+        </div>
+      </article>
+      <div class="story-ui" aria-hidden="true"><span class="story-count"><b id="storyNow">01</b> / 05</span><span class="story-line"><i id="storyBar"></i></span><span class="scroll-hint">Scroll</span></div>
+    </div>
+  </section>
+
+  <div class="ticker" aria-label="Today’s Pune mandi prices"><div class="ticker-track" id="ticker"></div></div>
+
+  <section class="section" id="prices">
+    <div class="sec-head" data-reveal>
+      <h2>Today’s mandi prices</h2>
+      <p class="muted src-line"><span class="live-tag">● Real prices</span> Pune mandis · AGMARKNET (data.gov.in) · as of <b class="as-of">–</b></p>
+    </div>
+    <div class="veg-tabs" id="pubTabs" role="tablist" aria-label="Vegetable" data-reveal></div>
+    <div class="price-card" data-reveal>
+      <div class="pc-info">
+        <img id="pubImg" src="/img/photos/tomato-card.jpg" alt="" width="140" height="140" class="pc-img">
+        <p class="pc-name" id="pubName">Tomato</p>
+        <p class="pc-price"><span id="pubPrice">–</span> <small>₹/kg</small></p>
+        <p class="chg" id="pubChg"></p>
+        <p class="signal" id="pubSignal"></p>
+        <p class="muted small" id="pubNote"></p>
+        <button class="btn dark" data-open="signup" type="button">Open the full chart</button>
+      </div>
+      <div class="pc-chart"><div class="chart-head"><span class="muted small">APMC Pune · last 3 months</span><span class="live-badge" data-live-badge><i></i>Live <span class="ago">checking…</span></span></div><div id="pubChart" class="chart-box"></div><p class="legend-row"><span class="lg lg-price"></span>APMC Pune price <span class="lg lg-fc"></span>14-day estimate <span class="chart-credit">Chart: <a href="https://www.tradingview.com/" rel="noopener" target="_blank">TradingView Lightweight Charts™</a></span></p></div>
+    </div>
+  </section>
+
+  <section class="section mkt-section" id="mandis">
+    <div class="sec-head" data-reveal><h2>Pune mandi rates today</h2><p class="muted">₹ per kg · <span class="mkt-veg">Tomato</span> · <span class="as-of-long">–</span></p></div>
+    <div class="mkt-wrap" data-reveal>
+      <table class="mkt-table"><thead><tr><th>Mandi</th><th>Modal (most traded)</th><th>Lowest</th><th>Highest</th></tr></thead><tbody id="mktBody"><tr><td colspan="4" class="muted">Loading today’s rates…</td></tr></tbody></table>
+      <p class="muted tiny">Source: AGMARKNET daily arrivals and prices, Government of India (data.gov.in). Prices are wholesale, converted from ₹/quintal.</p>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="sec-head" data-reveal><h2>Made for busy kitchens</h2><p class="muted">Everything you need to buy vegetables at the right time.</p></div>
+    <div class="tiles">
+      <article class="tile t-big t-photo" data-reveal>
+        <img class="tile-bg" src="/img/photos/veg-stall.jpg" alt="Onions, potatoes and beans piled on a market stall" width="1600" height="1200" loading="lazy">
+        <div class="tile-copy"><p class="eyebrow">Forecast</p><h3>See 14 days ahead</h3><p>Daily mandi prices, turned into a simple outlook with a likely range.</p></div>
+      </article>
+      <article class="tile t-red" data-reveal>
+        <p class="eyebrow">Signal</p><h3>Buy now, wait, or steady</h3><p>One word per vegetable, every week.</p>
+        <div class="sig-demo"><span class="pill buy">Buy now ▲</span><span class="pill wait">Wait ▼</span><span class="pill steady">Steady ●</span></div>
+      </article>
+      <article class="tile t-green" data-reveal>
+        <p class="eyebrow">WhatsApp</p><h3>Your Monday brief</h3><p>No app to learn. It arrives where you already are.</p>
+        <p class="bubble mini"><span data-sig="tomato">Tomato: …</span> · <span data-sig="onion">Onion: …</span><span class="time">Mon 9:00 ✓✓</span></p>
+      </article>
+      <article class="tile t-wide t-photo" data-reveal>
+        <img class="tile-bg" src="/img/photos/pune-mandai.jpg" alt="Mahatma Phule Mandai market in Pune at night" width="1600" height="1066" loading="lazy">
+        <div class="tile-copy"><p class="eyebrow">Built for Pune</p><h3>From Phule Mandai to your kitchen</h3><p>Prices from the markets your suppliers buy in, planned around the kg you actually use.</p></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="band" data-reveal>
+    <div><p class="big" data-count="3">0</p><p>vegetables tracked</p></div>
+    <div><p class="big" data-count="14">0</p><p>days forecast</p></div>
+    <div><p class="big" data-count="7">0</p><p>Pune mandis tracked</p></div>
+    <div><p class="big"><span>₹</span><span data-count="0">0</span></p><p>during the pilot</p></div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="sec-head" data-reveal><h2>From mandi prices to a buying decision</h2></div>
+    <ol class="steps">
+      <li data-reveal><span class="n">01</span><h3>Collect</h3><p>Daily wholesale prices from every Pune mandi, straight from AGMARKNET (Govt. of India).</p></li>
+      <li data-reveal><span class="n">02</span><h3>Forecast</h3><p>Models tested against a simple baseline, so we only trust what beats it.</p></li>
+      <li data-reveal><span class="n">03</span><h3>Recommend</h3><p>Buy now, or wait, with how confident we are.</p></li>
+      <li data-reveal><span class="n">04</span><h3>Deliver</h3><p>One weekly brief on WhatsApp and as a PDF.</p></li>
+    </ol>
+  </section>
+
+  <section class="cta-band" id="pricing" data-reveal>
+    <img class="cb-bg" src="/img/photos/onion-hero.jpg" alt="" width="1600" height="1200" loading="lazy">
+    <p class="eyebrow">Pricing</p>
+    <h2>Free during the Pune pilot</h2>
+    <p>₹149/month when we launch. No card needed today.</p>
+    <button class="btn light" data-open="signup" type="button">Join early access</button>
+  </section>
+</main>
+
+<!-- ================= dashboard (signed in) ================= -->
+<main id="app" hidden>
+  <section class="app-head" id="dash">
+    <div>
+      <p class="eyebrow" id="greet">Hello</p>
+      <h1 id="appTitle">Your market today</h1>
+      <p class="muted"><span id="bizLine"></span> · Prices as of <span id="asOf"></span> · <span class="live-tag">● Real prices · AGMARKNET</span></p>
+    </div>
+    <button class="btn outline" id="editProfileBtn2" type="button">Edit business details</button>
+  </section>
+
+  <section class="veg-cards" id="vegCards" aria-label="Today’s prices"></section>
+
+  <section class="chart-panel" data-reveal>
+    <div class="cp-top">
+      <div class="veg-tabs small" id="appTabs" role="tablist" aria-label="Vegetable"></div>
+      <div class="tools">
+        <div class="seg" id="rangeSeg" role="group" aria-label="Time range">
+          <button type="button" data-range="14">2W</button><button type="button" data-range="30">1M</button><button type="button" data-range="90" class="on">3M</button>
+        </div>
+        <div class="seg" id="typeSeg" role="group" aria-label="Chart type">
+          <button type="button" data-type="candles" class="on">Candles</button><button type="button" data-type="line">Line</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="fcToggle" checked> Forecast</label>
+      </div>
+    </div>
+    <div class="chart-head"><div class="ohlc" id="ohlc" aria-live="off"></div><span class="live-badge" data-live-badge><i></i>Live <span class="ago">checking…</span></span></div>
+    <div id="mainChart" class="chart-box tall"></div>
+    <p class="legend-row"><span class="lg lg-up"></span>Price up <span class="lg lg-down"></span>Price down (candle = day’s low–high, close = modal price) <span class="lg lg-fc"></span>14-day estimate <span class="lg lg-band"></span>Likely range <span class="chart-credit">Chart: <a href="https://www.tradingview.com/" rel="noopener" target="_blank">TradingView Lightweight Charts™</a></span></p>
+  </section>
+
+  <section class="mkt-wrap app-mkt" data-reveal>
+    <h2 class="mkt-title">Today in Pune mandis · <span class="mkt-veg">Tomato</span></h2>
+    <table class="mkt-table"><thead><tr><th>Mandi</th><th>Modal</th><th>Lowest</th><th>Highest</th></tr></thead><tbody id="appMktBody"></tbody></table>
+  </section>
+
+  <section class="app-grid">
+    <article class="card brief" id="brief" data-reveal>
+      <p class="eyebrow">This week’s brief</p>
+      <h2>What to buy</h2>
+      <ul class="brief-list" id="briefList"></ul>
+    </article>
+    <article class="card planner" id="planner" data-reveal>
+      <p class="eyebrow">Planner</p>
+      <h2>Your week’s buying</h2>
+      <p class="muted small">How many kg do you use in a week?</p>
+      <div class="plan-rows" id="planRows"></div>
+      <div class="plan-total">
+        <div><p class="muted small">At today’s prices</p><p class="pt" id="ptNow">–</p></div>
+        <div><p class="muted small">If you follow the signal</p><p class="pt leaf" id="ptSave">–</p></div>
+      </div>
+      <p class="muted tiny">Uses today’s real APMC Pune prices and our 7-day estimate. Estimates can be wrong.</p>
+    </article>
+  </section>
+</main>
+
+<!-- ================= sign in / sign up ================= -->
+<dialog class="modal" id="authModal" aria-labelledby="authTitle">
+  <button class="x" type="button" data-close aria-label="Close">×</button>
+  <div class="modal-side" aria-hidden="true"><img src="/img/photos/tomato-hero.jpg" alt="" width="1600" height="1200"><p>Buy vegetables at the right time.</p></div>
+  <div class="modal-body">
+    <h2 id="authTitle">Welcome to MolBhav</h2>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-signup" aria-selected="true" data-tab="signup" type="button">Sign up</button>
+      <button role="tab" id="tab-login" aria-selected="false" data-tab="login" type="button">Log in</button>
+    </div>
+    <div id="googleBlock" class="google" hidden>
+      <div id="googleBtn" class="google-btn"></div>
+      <p class="error" id="googleError" role="alert"></p>
+      <div class="or" aria-hidden="true"><span>or use email</span></div>
+    </div>
+    <form id="signupForm" class="form" novalidate>
+      <label>Your name<input name="name" autocomplete="name" maxlength="80" required></label>
+      <label>Email<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+      <label>Password<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><span class="hint">At least 8 characters</span></label>
+      <p class="error" id="signupError" role="alert"></p>
+      <button class="btn dark full" type="submit">Create account</button>
+    </form>
+    <form id="loginForm" class="form" hidden novalidate>
+      <label>Email<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+      <label>Password<input name="password" type="password" autocomplete="current-password" maxlength="128" required></label>
+      <p class="error" id="loginError" role="alert"></p>
+      <button class="btn dark full" type="submit">Log in</button>
+    </form>
+    <p class="tiny muted">By continuing you agree to our <a class="link" href="/privacy.html">privacy notice</a>.</p>
+  </div>
+</dialog>
+
+<!-- ================= business details (after Google sign-up, or edit) ================= -->
+<dialog class="modal narrow" id="profileModal" aria-labelledby="profTitle">
+  <button class="x" type="button" id="profClose" aria-label="Close">×</button>
+  <div class="modal-body">
+    <p class="eyebrow" id="profStep">One last step</p>
+    <h2 id="profTitle">Tell us about your business</h2>
+    <p class="muted">So your brief and planner fit your kitchen.</p>
+    <form id="profileForm" class="form" novalidate>
+      <label>Business name<input name="business" autocomplete="organization" maxlength="100" required placeholder="e.g. Spice Route Kitchen"></label>
+      <fieldset class="type-grid" id="typeGrid"><legend>Business type</legend></fieldset>
+      <label>City<input name="city" maxlength="60" value="Pune"></label>
+      <p class="error" id="profileError" role="alert"></p>
+      <button class="btn dark full" type="submit">Save and continue</button>
+    </form>
+  </div>
+</dialog>
+
+<footer class="foot">
+  <div class="foot-in">
+    <div class="f-brand"><a class="brand" href="/"><span class="mark" aria-hidden="true">MB</span><span>Mol<span class="hl">Bhav</span></span></a><p class="muted small">Vegetable price forecasts for Pune’s restaurants and cloud kitchens.</p></div>
+    <div><h4>Product</h4><a href="#prices">Prices</a><a href="#features">Features</a><a href="#pricing">Pricing</a></div>
+    <div><h4>Company</h4><a href="#how">How it works</a><a href="/privacy.html">Privacy</a></div>
+  </div>
+  <p class="f-legal">© MolBhav · Pune, India · Prices: AGMARKNET, Government of India (data.gov.in), wholesale modal prices in ₹/kg. Forecasts and buy/wait signals are our estimates, not guarantees.</p>
+  <details class="credits">
+    <summary>Photo and chart credits</summary>
+    <ul>
+      <li>Tomato, onion and potato photos (Koyambedu Market): McKay Savage, <a href="https://creativecommons.org/licenses/by/2.0" rel="noopener" target="_blank">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:India_-_Koyambedu_Market_-_Tomatoes_06_(3986306253).jpg" rel="noopener" target="_blank">Wikimedia Commons</a></li>
+      <li>Mahatma Phule Mandai, Pune: Udaykumar PR, <a href="https://creativecommons.org/licenses/by/3.0" rel="noopener" target="_blank">CC BY 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mahatma_Jyothiba_Phule_Mandai,_Pune_-_panoramio.jpg" rel="noopener" target="_blank">Wikimedia Commons</a></li>
+      <li>Vegetable stall, Ooty Market: Timothy A. Gonsalves, <a href="https://creativecommons.org/licenses/by-sa/4.0" rel="noopener" target="_blank">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Onions_Veg_Stall_Ooty_Market_Nilgiris_Aug25_A7CR_07102.jpg" rel="noopener" target="_blank">Wikimedia Commons</a></li>
+      <li>Mandi prices: AGMARKNET via <a href="https://data.gov.in" rel="noopener" target="_blank">data.gov.in</a> (Government Open Data License – India).</li>
+      <li>Photos are resized and cropped. Charts: TradingView Lightweight Charts™, Copyright © 2026 TradingView, Inc., <a href="https://www.tradingview.com/" rel="noopener" target="_blank">tradingview.com</a></li>
+    </ul>
+  </details>
+</footer>
+
+<script src="/vendor/lightweight-charts.js" defer></script>
+<script src="/vendor/motion.js" defer></script>
+<script src="/app.js?v=6" defer></script>
+<script src="/motion-fx.js?v=5" defer></script>
+</body>
+</html>

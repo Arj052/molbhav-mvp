@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "public/**",
+          "admin/**",
+          "prices.js",
+          "node_modules/lightweight-charts/dist/lightweight-charts.standalone.production.js",
+          "node_modules/motion/dist/motion.js"
+        ],
+        "maxDuration": 60
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.js"
+    }
+  ],
+  "regions": [
+    "bom1"
+  ]
+}
